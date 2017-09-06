@@ -11,7 +11,7 @@
  * dataRole: 记录点击属性值
  * isTrue: 记录点击的是否正确
  * corTimeArr: 每题答对用时
- * overTime: 记录每题结束时间
+ * startTime: 记录每题结束时间
  *
  */
 
@@ -23,7 +23,7 @@ var atuoTime,
     dataRole,
     isTrue = false,
     corTimeArr = [],
-    overTime = 0;
+    startTime = 0;
 
 /* 全局变量
  * source：小雪花图片
@@ -84,7 +84,7 @@ function _event() {
 
         level = 5
 
-        overTime = $('#hideTime').text()
+        startTime = $('#hideTime').text()
 
         _setPartB()
 
@@ -97,6 +97,8 @@ function _event() {
             $('#list').remove()
 
             $('#over').show()
+
+            _over()
 
         })
 
@@ -131,6 +133,8 @@ function _event() {
             $('#list').remove()
 
             $('#over').show()
+
+            _over()
 
         })
 
@@ -177,8 +181,8 @@ function _clickBtn(e) {
     } else {
         //全局变量 dataRole 有值，这是点击第二次
 
-        //停掉30秒倒计时
-        clearInterval(atuoTime)
+        // 禁止页面等待时间内点击
+        $('body').css('pointer-events', 'none')
 
         if (dataRole == $dataRole) {
             //点击正确
@@ -216,24 +220,38 @@ function _clickBtn(e) {
                     }
 
 
-                } else if ($('#list').attr('data-part') == 'B') {
+                }
+
+                else if ($('#list').attr('data-part') == 'B') {
 
 
-                    var $curTime = $('#hideTime').text(),
+                    //停掉30秒倒计时
+                    clearInterval(atuoTime)
 
-                        corTime = overTime - $curTime
+                    var $overTime = $('#hideTime').text()
 
-                    corTimeArr.push(corTime)
+                    var $corTime = startTime - $overTime;
 
-                    console.log('corTimeArr', corTimeArr)
+                    corTimeArr.push($corTime)
+
+
+                    startTime = $('#hideTime').text();
+
 
                     if (level >= 15) {
+
+
+                        clearInterval(atuoTime420)
 
                         $('#list').remove()
 
                         $('#over').show()
 
-                    } else {
+                        _over()
+
+
+                    }
+                    else if (level < 15) {
 
 
                         _setPartB()
@@ -242,6 +260,7 @@ function _clickBtn(e) {
                     }
 
                 }
+                $('body').css('pointer-events', 'auto')
 
 
             }, 1000)
@@ -252,6 +271,7 @@ function _clickBtn(e) {
             isTrue = false;
 
             $('#list li p.active').addClass('error')
+
 
             setTimeout(function () {
 
@@ -266,7 +286,9 @@ function _clickBtn(e) {
 
                 }
 
-            }, 2000)
+                $('body').css('pointer-events', 'auto')
+
+            }, 2500)
 
         }
 
@@ -353,8 +375,6 @@ function _setPartB() {
 
     _time(30, function () {
 
-        console.log('>>>>>>>>>>>>>>>', level)
-
         _setPartB()
 
 
@@ -382,16 +402,14 @@ function _setProcess(part) {
 //游戏结束
 function _over() {
 
-    clearInterval(atuoTime420)
 
     /* ajax 请求接口路径，返回json 数据
-     * getChoseA：第一部分返回参数
-     * getChoseB: 第二部分返回参数
-     * getSumA：第一部分总计时间返回参数
-     * getSumB：第二部分总计时间返回参数
+     * corTimeArr: 每题答对用时
      * */
 
-    var param = {}
+    var param = {
+        corTimeArr: corTimeArr
+    }
 
     console.log('当前返回参数', param)
 
